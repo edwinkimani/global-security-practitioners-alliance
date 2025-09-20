@@ -1,20 +1,21 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { Navigation } from "@/components/navigation"
+import Navigation from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Upload, Camera, PenTool, AlertCircle, CheckCircle } from "lucide-react"
+import { Camera, AlertCircle, CheckCircle } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import SignatureCanvas from "react-signature-canvas"
@@ -70,7 +71,8 @@ export default function RegisterPage() {
   const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      if (file.size > 5 * 1024 * 1024) {
+        // 5MB limit
         alert("File size must be less than 5MB")
         return
       }
@@ -94,9 +96,10 @@ export default function RegisterPage() {
   }
 
   const nextStep = async () => {
-    const fieldsToValidate = step === 1
-      ? ["firstName", "lastName", "email", "phone", "nationality", "gender", "dateOfBirth"]
-      : ["designation", "organization", "documentType", "documentNumber"]
+    const fieldsToValidate =
+      step === 1
+        ? ["firstName", "lastName", "email", "phone", "nationality", "gender", "dateOfBirth"]
+        : ["designation", "organization", "documentType", "documentNumber"]
 
     const isValid = await trigger(fieldsToValidate as any)
     if (isValid) {
@@ -128,42 +131,40 @@ export default function RegisterPage() {
 
       if (authData.user) {
         // Upload passport photo
-        const photoFileName = `${authData.user.id}_passport.${passportPhoto.name.split('.').pop()}`
+        const photoFileName = `${authData.user.id}_passport.${passportPhoto.name.split(".").pop()}`
         const { data: photoData, error: photoError } = await supabase.storage
-          .from('documents')
+          .from("documents")
           .upload(photoFileName, passportPhoto)
 
         if (photoError) throw photoError
 
         // Create profile
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: authData.user.id,
-            first_name: data.firstName,
-            last_name: data.lastName,
-            passport_photo_url: photoData.path,
-            nationality: data.nationality,
-            gender: data.gender,
-            date_of_birth: data.dateOfBirth,
-            phone_number: data.phone,
-            email: data.email,
-            designation: data.designation,
-            organization_name: data.organization,
-            document_type: data.documentType,
-            document_number: data.documentNumber,
-            signature_data: signatureData,
-            declaration_accepted: data.declarationAccepted,
-          })
+        const { error: profileError } = await supabase.from("profiles").insert({
+          id: authData.user.id,
+          first_name: data.firstName,
+          last_name: data.lastName,
+          passport_photo_url: photoData.path,
+          nationality: data.nationality,
+          gender: data.gender,
+          date_of_birth: data.dateOfBirth,
+          phone_number: data.phone,
+          email: data.email,
+          designation: data.designation,
+          organization_name: data.organization,
+          document_type: data.documentType,
+          document_number: data.documentNumber,
+          signature_data: signatureData,
+          declaration_accepted: data.declarationAccepted,
+        })
 
         if (profileError) throw profileError
 
         // Redirect to payment
-        router.push('/payment')
+        router.push("/payment")
       }
     } catch (error) {
-      console.error('Registration error:', error)
-      alert('Registration failed. Please try again.')
+      console.error("Registration error:", error)
+      alert("Registration failed. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -193,7 +194,8 @@ export default function RegisterPage() {
               <CardHeader>
                 <CardTitle className="text-2xl">Professional Profile Registration</CardTitle>
                 <CardDescription>
-                  Step {step} of 3: {step === 1 ? "Personal Information" : step === 2 ? "Professional Details" : "Review & Submit"}
+                  Step {step} of 3:{" "}
+                  {step === 1 ? "Personal Information" : step === 2 ? "Professional Details" : "Review & Submit"}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -203,51 +205,26 @@ export default function RegisterPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                           <Label htmlFor="firstName">First Name *</Label>
-                          <Input
-                            id="firstName"
-                            {...register("firstName")}
-                            placeholder="John"
-                          />
-                          {errors.firstName && (
-                            <p className="text-sm text-red-600 mt-1">{errors.firstName.message}</p>
-                          )}
+                          <Input id="firstName" {...register("firstName")} placeholder="John" />
+                          {errors.firstName && <p className="text-sm text-red-600 mt-1">{errors.firstName.message}</p>}
                         </div>
                         <div>
                           <Label htmlFor="lastName">Last Name *</Label>
-                          <Input
-                            id="lastName"
-                            {...register("lastName")}
-                            placeholder="Doe"
-                          />
-                          {errors.lastName && (
-                            <p className="text-sm text-red-600 mt-1">{errors.lastName.message}</p>
-                          )}
+                          <Input id="lastName" {...register("lastName")} placeholder="Doe" />
+                          {errors.lastName && <p className="text-sm text-red-600 mt-1">{errors.lastName.message}</p>}
                         </div>
                       </div>
 
                       <div>
                         <Label htmlFor="email">Email Address *</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          {...register("email")}
-                          placeholder="john.doe@example.com"
-                        />
-                        {errors.email && (
-                          <p className="text-sm text-red-600 mt-1">{errors.email.message}</p>
-                        )}
+                        <Input id="email" type="email" {...register("email")} placeholder="john.doe@example.com" />
+                        {errors.email && <p className="text-sm text-red-600 mt-1">{errors.email.message}</p>}
                       </div>
 
                       <div>
                         <Label htmlFor="phone">Phone Number *</Label>
-                        <Input
-                          id="phone"
-                          {...register("phone")}
-                          placeholder="+1 (555) 123-4567"
-                        />
-                        {errors.phone && (
-                          <p className="text-sm text-red-600 mt-1">{errors.phone.message}</p>
-                        )}
+                        <Input id="phone" {...register("phone")} placeholder="+1 (555) 123-4567" />
+                        {errors.phone && <p className="text-sm text-red-600 mt-1">{errors.phone.message}</p>}
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -285,19 +262,13 @@ export default function RegisterPage() {
                               <SelectItem value="other">Other</SelectItem>
                             </SelectContent>
                           </Select>
-                          {errors.gender && (
-                            <p className="text-sm text-red-600 mt-1">{errors.gender.message}</p>
-                          )}
+                          {errors.gender && <p className="text-sm text-red-600 mt-1">{errors.gender.message}</p>}
                         </div>
                       </div>
 
                       <div>
                         <Label htmlFor="dateOfBirth">Date of Birth *</Label>
-                        <Input
-                          id="dateOfBirth"
-                          type="date"
-                          {...register("dateOfBirth")}
-                        />
+                        <Input id="dateOfBirth" type="date" {...register("dateOfBirth")} />
                         {errors.dateOfBirth && (
                           <p className="text-sm text-red-600 mt-1">{errors.dateOfBirth.message}</p>
                         )}
@@ -338,11 +309,7 @@ export default function RegisterPage() {
                     <div className="space-y-6">
                       <div>
                         <Label htmlFor="designation">Designation/Role *</Label>
-                        <Input
-                          id="designation"
-                          {...register("designation")}
-                          placeholder="Security Manager"
-                        />
+                        <Input id="designation" {...register("designation")} placeholder="Security Manager" />
                         {errors.designation && (
                           <p className="text-sm text-red-600 mt-1">{errors.designation.message}</p>
                         )}
@@ -350,11 +317,7 @@ export default function RegisterPage() {
 
                       <div>
                         <Label htmlFor="organization">Organization *</Label>
-                        <Input
-                          id="organization"
-                          {...register("organization")}
-                          placeholder="ABC Corporation"
-                        />
+                        <Input id="organization" {...register("organization")} placeholder="ABC Corporation" />
                         {errors.organization && (
                           <p className="text-sm text-red-600 mt-1">{errors.organization.message}</p>
                         )}
@@ -363,7 +326,11 @@ export default function RegisterPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                           <Label htmlFor="documentType">Document Type *</Label>
-                          <Select onValueChange={(value: "passport" | "national_id" | "drivers_license") => setValue("documentType", value)}>
+                          <Select
+                            onValueChange={(value: "passport" | "national_id" | "drivers_license") =>
+                              setValue("documentType", value)
+                            }
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="Select document type" />
                             </SelectTrigger>
@@ -426,17 +393,18 @@ export default function RegisterPage() {
                       </div>
 
                       <div className="flex items-start gap-3">
-                        <Checkbox
-                          id="declaration"
-                          {...register("declarationAccepted")}
-                        />
+                        <Checkbox id="declaration" {...register("declarationAccepted")} />
                         <div className="grid gap-1.5 leading-none">
-                          <Label htmlFor="declaration" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                          <Label
+                            htmlFor="declaration"
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                          >
                             Declaration *
                           </Label>
                           <p className="text-xs text-muted-foreground">
-                            I hereby declare that all information provided is true and accurate to the best of my knowledge.
-                            I understand that any false information may result in disqualification from the certification process.
+                            I hereby declare that all information provided is true and accurate to the best of my
+                            knowledge. I understand that any false information may result in disqualification from the
+                            certification process.
                           </p>
                           {errors.declarationAccepted && (
                             <p className="text-sm text-red-600">{errors.declarationAccepted.message}</p>
@@ -458,19 +426,39 @@ export default function RegisterPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
                         <div>
                           <h4 className="font-semibold mb-2">Personal Information</h4>
-                          <p><strong>Name:</strong> {watch("firstName")} {watch("lastName")}</p>
-                          <p><strong>Email:</strong> {watch("email")}</p>
-                          <p><strong>Phone:</strong> {watch("phone")}</p>
-                          <p><strong>Nationality:</strong> {watch("nationality")}</p>
-                          <p><strong>Gender:</strong> {watch("gender")}</p>
-                          <p><strong>Date of Birth:</strong> {watch("dateOfBirth")}</p>
+                          <p>
+                            <strong>Name:</strong> {watch("firstName")} {watch("lastName")}
+                          </p>
+                          <p>
+                            <strong>Email:</strong> {watch("email")}
+                          </p>
+                          <p>
+                            <strong>Phone:</strong> {watch("phone")}
+                          </p>
+                          <p>
+                            <strong>Nationality:</strong> {watch("nationality")}
+                          </p>
+                          <p>
+                            <strong>Gender:</strong> {watch("gender")}
+                          </p>
+                          <p>
+                            <strong>Date of Birth:</strong> {watch("dateOfBirth")}
+                          </p>
                         </div>
                         <div>
                           <h4 className="font-semibold mb-2">Professional Information</h4>
-                          <p><strong>Designation:</strong> {watch("designation")}</p>
-                          <p><strong>Organization:</strong> {watch("organization")}</p>
-                          <p><strong>Document Type:</strong> {watch("documentType")}</p>
-                          <p><strong>Document Number:</strong> {watch("documentNumber")}</p>
+                          <p>
+                            <strong>Designation:</strong> {watch("designation")}
+                          </p>
+                          <p>
+                            <strong>Organization:</strong> {watch("organization")}
+                          </p>
+                          <p>
+                            <strong>Document Type:</strong> {watch("documentType")}
+                          </p>
+                          <p>
+                            <strong>Document Number:</strong> {watch("documentNumber")}
+                          </p>
                         </div>
                       </div>
 

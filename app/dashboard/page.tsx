@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Navigation } from "@/components/navigation"
+import Navigation from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -43,22 +43,24 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const getUserData = async () => {
-      const { data: { user: authUser } } = await supabase.auth.getUser()
+      const {
+        data: { user: authUser },
+      } = await supabase.auth.getUser()
 
       if (!authUser) {
-        router.push('/auth/login')
+        router.push("/auth/login")
         return
       }
 
       // Get user profile
       const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', authUser.id)
+        .from("profiles")
+        .select("*")
+        .eq("id", authUser.id)
         .single()
 
       if (profileError || !profile) {
-        router.push('/register')
+        router.push("/register")
         return
       }
 
@@ -67,10 +69,10 @@ export default function DashboardPage() {
       // Get latest test attempt if test completed
       if (profile.test_completed) {
         const { data: attempt, error: attemptError } = await supabase
-          .from('test_attempts')
-          .select('*')
-          .eq('user_id', authUser.id)
-          .order('completed_at', { ascending: false })
+          .from("test_attempts")
+          .select("*")
+          .eq("user_id", authUser.id)
+          .order("completed_at", { ascending: false })
           .limit(1)
           .single()
 
@@ -92,28 +94,30 @@ export default function DashboardPage() {
       // In a real implementation, you'd generate a PDF certificate
       // For now, we'll just mark it as issued
       const { error } = await supabase
-        .from('profiles')
+        .from("profiles")
         .update({
           certificate_issued: true,
-          certificate_url: `certificate-${user.id}.pdf` // Placeholder URL
+          certificate_url: `certificate-${user.id}.pdf`, // Placeholder URL
         })
-        .eq('id', user.id)
+        .eq("id", user.id)
 
       if (error) throw error
 
       // Update local state
-      setUser(prev => prev ? { ...prev, certificate_issued: true, certificate_url: `certificate-${user.id}.pdf` } : null)
+      setUser((prev) =>
+        prev ? { ...prev, certificate_issued: true, certificate_url: `certificate-${user.id}.pdf` } : null,
+      )
 
-      alert('Certificate generated successfully!')
+      alert("Certificate generated successfully!")
     } catch (error) {
-      console.error('Certificate generation error:', error)
-      alert('Error generating certificate. Please try again.')
+      console.error("Certificate generation error:", error)
+      alert("Error generating certificate. Please try again.")
     }
   }
 
   const downloadCertificate = () => {
     // In a real implementation, this would download the actual PDF
-    alert('Certificate download feature would be implemented here with a PDF generation service.')
+    alert("Certificate download feature would be implemented here with a PDF generation service.")
   }
 
   if (isLoading) {
@@ -175,7 +179,9 @@ export default function DashboardPage() {
                 <CardContent className="space-y-4">
                   <div>
                     <p className="text-sm text-muted-foreground">Name</p>
-                    <p className="font-semibold">{user.first_name} {user.last_name}</p>
+                    <p className="font-semibold">
+                      {user.first_name} {user.last_name}
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Email</p>
@@ -190,7 +196,7 @@ export default function DashboardPage() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Payment Status</p>
-                    <Badge variant={user.payment_status === 'completed' ? 'default' : 'secondary'}>
+                    <Badge variant={user.payment_status === "completed" ? "default" : "secondary"}>
                       {user.payment_status}
                     </Badge>
                   </div>
@@ -217,11 +223,17 @@ export default function DashboardPage() {
                           <div>
                             <p className="text-sm text-muted-foreground">Score</p>
                             <div className="flex items-center gap-2">
-                              <Progress value={(testAttempt.score / testAttempt.total_questions) * 100} className="flex-1" />
-                              <span className="font-semibold">{testAttempt.score}/{testAttempt.total_questions}</span>
+                              <Progress
+                                value={(testAttempt.score / testAttempt.total_questions) * 100}
+                                className="flex-1"
+                              />
+                              <span className="font-semibold">
+                                {testAttempt.score}/{testAttempt.total_questions}
+                              </span>
                             </div>
                             <p className="text-xs text-muted-foreground mt-1">
-                              {Math.round((testAttempt.score / testAttempt.total_questions) * 100)}% - {testAttempt.passed ? 'Passed' : 'Failed'}
+                              {Math.round((testAttempt.score / testAttempt.total_questions) * 100)}% -{" "}
+                              {testAttempt.passed ? "Passed" : "Failed"}
                             </p>
                           </div>
                           <div>
@@ -231,15 +243,13 @@ export default function DashboardPage() {
                         </>
                       )}
                     </>
-                  ) : user.payment_status === 'completed' ? (
+                  ) : user.payment_status === "completed" ? (
                     <>
                       <div className="flex items-center gap-2">
                         <Clock className="h-5 w-5 text-blue-600" />
                         <span className="font-semibold text-blue-600">Test Available</span>
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        You can now take the security aptitude test.
-                      </p>
+                      <p className="text-sm text-muted-foreground">You can now take the security aptitude test.</p>
                       <Button asChild className="w-full">
                         <Link href="/test">Start Test</Link>
                       </Button>
@@ -250,10 +260,8 @@ export default function DashboardPage() {
                         <XCircle className="h-5 w-5 text-red-600" />
                         <span className="font-semibold text-red-600">Payment Required</span>
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        Complete your payment to access the test.
-                      </p>
-                      <Button asChild variant="outline" className="w-full">
+                      <p className="text-sm text-muted-foreground">Complete your payment to access the test.</p>
+                      <Button asChild variant="outline" className="w-full bg-transparent">
                         <Link href="/payment">Complete Payment</Link>
                       </Button>
                     </>
@@ -290,9 +298,7 @@ export default function DashboardPage() {
                         <Award className="h-5 w-5 text-blue-600" />
                         <span className="font-semibold text-blue-600">Certificate Available</span>
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        Congratulations! Generate your certificate now.
-                      </p>
+                      <p className="text-sm text-muted-foreground">Congratulations! Generate your certificate now.</p>
                       <Button onClick={generateCertificate} className="w-full">
                         Generate Certificate
                       </Button>
@@ -326,13 +332,11 @@ export default function DashboardPage() {
             <Card className="mt-8">
               <CardHeader>
                 <CardTitle>Next Steps</CardTitle>
-                <CardDescription>
-                  Here's what you can do next in your certification journey.
-                </CardDescription>
+                <CardDescription>Here's what you can do next in your certification journey.</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {!user.test_completed && user.payment_status === 'completed' && (
+                  {!user.test_completed && user.payment_status === "completed" && (
                     <div className="text-center">
                       <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
                         <FileText className="h-6 w-6 text-primary-foreground" />
@@ -353,9 +357,7 @@ export default function DashboardPage() {
                         <Award className="h-6 w-6 text-primary-foreground" />
                       </div>
                       <h3 className="font-semibold mb-2">Get Certified</h3>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Generate your official GSPA certificate.
-                      </p>
+                      <p className="text-sm text-muted-foreground mb-4">Generate your official GSPA certificate.</p>
                       <Button onClick={generateCertificate} size="sm">
                         Generate Certificate
                       </Button>

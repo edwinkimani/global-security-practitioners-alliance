@@ -1,7 +1,9 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useEffect } from "react"
-import { Navigation } from "@/components/navigation"
+import Navigation from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,9 +14,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Edit, Trash2, Eye, AlertCircle, Loader2 } from "lucide-react"
+import { Plus, Edit, Trash2, AlertCircle, Loader2 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 
@@ -55,10 +64,12 @@ export default function AdminPage() {
 
   useEffect(() => {
     const checkAdminAccess = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
 
       if (!user) {
-        router.push('/auth/login')
+        router.push("/auth/login")
         return
       }
 
@@ -72,13 +83,10 @@ export default function AdminPage() {
 
   const loadQuestions = async () => {
     setIsLoading(true)
-    const { data, error } = await supabase
-      .from('test_questions')
-      .select('*')
-      .order('created_at', { ascending: false })
+    const { data, error } = await supabase.from("test_questions").select("*").order("created_at", { ascending: false })
 
     if (error) {
-      console.error('Error loading questions:', error)
+      console.error("Error loading questions:", error)
       return
     }
 
@@ -109,7 +117,7 @@ export default function AdminPage() {
       if (editingQuestion) {
         // Update existing question
         const { error } = await supabase
-          .from('test_questions')
+          .from("test_questions")
           .update({
             question: formData.question,
             option_a: formData.option_a,
@@ -121,24 +129,22 @@ export default function AdminPage() {
             difficulty: formData.difficulty,
             is_active: formData.is_active,
           })
-          .eq('id', editingQuestion.id)
+          .eq("id", editingQuestion.id)
 
         if (error) throw error
       } else {
         // Create new question
-        const { error } = await supabase
-          .from('test_questions')
-          .insert({
-            question: formData.question,
-            option_a: formData.option_a,
-            option_b: formData.option_b,
-            option_c: formData.option_c,
-            option_d: formData.option_d,
-            correct_answer: formData.correct_answer,
-            category: formData.category,
-            difficulty: formData.difficulty,
-            is_active: formData.is_active,
-          })
+        const { error } = await supabase.from("test_questions").insert({
+          question: formData.question,
+          option_a: formData.option_a,
+          option_b: formData.option_b,
+          option_c: formData.option_c,
+          option_d: formData.option_d,
+          correct_answer: formData.correct_answer,
+          category: formData.category,
+          difficulty: formData.difficulty,
+          is_active: formData.is_active,
+        })
 
         if (error) throw error
       }
@@ -147,8 +153,8 @@ export default function AdminPage() {
       setIsDialogOpen(false)
       loadQuestions()
     } catch (error) {
-      console.error('Error saving question:', error)
-      alert('Error saving question. Please try again.')
+      console.error("Error saving question:", error)
+      alert("Error saving question. Please try again.")
     } finally {
       setIsSubmitting(false)
     }
@@ -171,36 +177,30 @@ export default function AdminPage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this question?')) return
+    if (!confirm("Are you sure you want to delete this question?")) return
 
     try {
-      const { error } = await supabase
-        .from('test_questions')
-        .delete()
-        .eq('id', id)
+      const { error } = await supabase.from("test_questions").delete().eq("id", id)
 
       if (error) throw error
 
       loadQuestions()
     } catch (error) {
-      console.error('Error deleting question:', error)
-      alert('Error deleting question. Please try again.')
+      console.error("Error deleting question:", error)
+      alert("Error deleting question. Please try again.")
     }
   }
 
   const toggleActive = async (id: string, currentStatus: boolean) => {
     try {
-      const { error } = await supabase
-        .from('test_questions')
-        .update({ is_active: !currentStatus })
-        .eq('id', id)
+      const { error } = await supabase.from("test_questions").update({ is_active: !currentStatus }).eq("id", id)
 
       if (error) throw error
 
       loadQuestions()
     } catch (error) {
-      console.error('Error updating question status:', error)
-      alert('Error updating question status. Please try again.')
+      console.error("Error updating question status:", error)
+      alert("Error updating question status. Please try again.")
     }
   }
 
@@ -240,19 +240,20 @@ export default function AdminPage() {
               <h2 className="text-3xl font-bold">Question Management</h2>
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button onClick={() => { resetForm(); setIsDialogOpen(true) }}>
+                  <Button
+                    onClick={() => {
+                      resetForm()
+                      setIsDialogOpen(true)
+                    }}
+                  >
                     <Plus className="h-4 w-4 mr-2" />
                     Add Question
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
-                    <DialogTitle>
-                      {editingQuestion ? 'Edit Question' : 'Add New Question'}
-                    </DialogTitle>
-                    <DialogDescription>
-                      Create or modify a security aptitude test question.
-                    </DialogDescription>
+                    <DialogTitle>{editingQuestion ? "Edit Question" : "Add New Question"}</DialogTitle>
+                    <DialogDescription>Create or modify a security aptitude test question.</DialogDescription>
                   </DialogHeader>
 
                   <form onSubmit={handleSubmit} className="space-y-6">
@@ -261,7 +262,7 @@ export default function AdminPage() {
                       <Textarea
                         id="question"
                         value={formData.question}
-                        onChange={(e) => setFormData(prev => ({ ...prev, question: e.target.value }))}
+                        onChange={(e) => setFormData((prev) => ({ ...prev, question: e.target.value }))}
                         placeholder="Enter the question text"
                         rows={3}
                         required
@@ -274,7 +275,7 @@ export default function AdminPage() {
                         <Input
                           id="option_a"
                           value={formData.option_a}
-                          onChange={(e) => setFormData(prev => ({ ...prev, option_a: e.target.value }))}
+                          onChange={(e) => setFormData((prev) => ({ ...prev, option_a: e.target.value }))}
                           placeholder="Enter option A"
                           required
                         />
@@ -284,7 +285,7 @@ export default function AdminPage() {
                         <Input
                           id="option_b"
                           value={formData.option_b}
-                          onChange={(e) => setFormData(prev => ({ ...prev, option_b: e.target.value }))}
+                          onChange={(e) => setFormData((prev) => ({ ...prev, option_b: e.target.value }))}
                           placeholder="Enter option B"
                           required
                         />
@@ -294,7 +295,7 @@ export default function AdminPage() {
                         <Input
                           id="option_c"
                           value={formData.option_c}
-                          onChange={(e) => setFormData(prev => ({ ...prev, option_c: e.target.value }))}
+                          onChange={(e) => setFormData((prev) => ({ ...prev, option_c: e.target.value }))}
                           placeholder="Enter option C"
                           required
                         />
@@ -304,7 +305,7 @@ export default function AdminPage() {
                         <Input
                           id="option_d"
                           value={formData.option_d}
-                          onChange={(e) => setFormData(prev => ({ ...prev, option_d: e.target.value }))}
+                          onChange={(e) => setFormData((prev) => ({ ...prev, option_d: e.target.value }))}
                           placeholder="Enter option D"
                           required
                         />
@@ -316,7 +317,7 @@ export default function AdminPage() {
                         <Label htmlFor="correct_answer">Correct Answer *</Label>
                         <Select
                           value={formData.correct_answer}
-                          onValueChange={(value) => setFormData(prev => ({ ...prev, correct_answer: value }))}
+                          onValueChange={(value) => setFormData((prev) => ({ ...prev, correct_answer: value }))}
                         >
                           <SelectTrigger>
                             <SelectValue />
@@ -335,7 +336,7 @@ export default function AdminPage() {
                         <Input
                           id="category"
                           value={formData.category}
-                          onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                          onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
                           placeholder="e.g., Network Security"
                           required
                         />
@@ -345,7 +346,7 @@ export default function AdminPage() {
                         <Label htmlFor="difficulty">Difficulty *</Label>
                         <Select
                           value={formData.difficulty}
-                          onValueChange={(value) => setFormData(prev => ({ ...prev, difficulty: value }))}
+                          onValueChange={(value) => setFormData((prev) => ({ ...prev, difficulty: value }))}
                         >
                           <SelectTrigger>
                             <SelectValue />
@@ -363,21 +364,17 @@ export default function AdminPage() {
                       <Switch
                         id="is_active"
                         checked={formData.is_active}
-                        onCheckedChange={(checked: boolean) => setFormData(prev => ({ ...prev, is_active: checked }))}
+                        onCheckedChange={(checked: boolean) => setFormData((prev) => ({ ...prev, is_active: checked }))}
                       />
                       <Label htmlFor="is_active">Active (visible in tests)</Label>
                     </div>
 
                     <div className="flex justify-end gap-4">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setIsDialogOpen(false)}
-                      >
+                      <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                         Cancel
                       </Button>
                       <Button type="submit" disabled={isSubmitting}>
-                        {isSubmitting ? "Saving..." : (editingQuestion ? "Update" : "Create")}
+                        {isSubmitting ? "Saving..." : editingQuestion ? "Update" : "Create"}
                       </Button>
                     </div>
                   </form>
@@ -389,17 +386,13 @@ export default function AdminPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Test Questions ({questions.length})</CardTitle>
-                <CardDescription>
-                  Manage all security aptitude test questions
-                </CardDescription>
+                <CardDescription>Manage all security aptitude test questions</CardDescription>
               </CardHeader>
               <CardContent>
                 {questions.length === 0 ? (
                   <Alert>
                     <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                      No questions found. Add your first question to get started.
-                    </AlertDescription>
+                    <AlertDescription>No questions found. Add your first question to get started.</AlertDescription>
                   </Alert>
                 ) : (
                   <Table>
@@ -426,8 +419,11 @@ export default function AdminPage() {
                           <TableCell>
                             <Badge
                               variant={
-                                question.difficulty === 'easy' ? 'default' :
-                                question.difficulty === 'medium' ? 'secondary' : 'destructive'
+                                question.difficulty === "easy"
+                                  ? "default"
+                                  : question.difficulty === "medium"
+                                    ? "secondary"
+                                    : "destructive"
                               }
                             >
                               {question.difficulty}
@@ -441,11 +437,7 @@ export default function AdminPage() {
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleEdit(question)}
-                              >
+                              <Button variant="outline" size="sm" onClick={() => handleEdit(question)}>
                                 <Edit className="h-4 w-4" />
                               </Button>
                               <Button

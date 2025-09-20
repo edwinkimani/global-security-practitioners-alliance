@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { Navigation } from "@/components/navigation"
+import Navigation from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -16,14 +16,16 @@ import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 
-const signupSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-})
+const signupSchema = z
+  .object({
+    email: z.string().email("Invalid email address"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  })
 
 type SignupForm = z.infer<typeof signupSchema>
 
@@ -54,9 +56,9 @@ export default function SignupPage() {
       if (authError) throw authError
 
       // Redirect to registration form
-      router.push('/register')
+      router.push("/register")
     } catch (error: any) {
-      setError(error.message || 'Signup failed. Please try again.')
+      setError(error.message || "Signup failed. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -74,9 +76,7 @@ export default function SignupPage() {
                 <Shield className="h-12 w-12 text-primary" />
               </div>
               <CardTitle className="text-2xl">Create Account</CardTitle>
-              <CardDescription>
-                Start your journey towards GSPA certification.
-              </CardDescription>
+              <CardDescription>Start your journey towards GSPA certification.</CardDescription>
             </CardHeader>
             <CardContent>
               {error && (
@@ -89,28 +89,14 @@ export default function SignupPage() {
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div>
                   <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    {...register("email")}
-                    placeholder="your.email@example.com"
-                  />
-                  {errors.email && (
-                    <p className="text-sm text-red-600 mt-1">{errors.email.message}</p>
-                  )}
+                  <Input id="email" type="email" {...register("email")} placeholder="your.email@example.com" />
+                  {errors.email && <p className="text-sm text-red-600 mt-1">{errors.email.message}</p>}
                 </div>
 
                 <div>
                   <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    {...register("password")}
-                    placeholder="Create a password"
-                  />
-                  {errors.password && (
-                    <p className="text-sm text-red-600 mt-1">{errors.password.message}</p>
-                  )}
+                  <Input id="password" type="password" {...register("password")} placeholder="Create a password" />
+                  {errors.password && <p className="text-sm text-red-600 mt-1">{errors.password.message}</p>}
                 </div>
 
                 <div>

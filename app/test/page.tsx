@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Navigation } from "@/components/navigation"
+import Navigation from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,7 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Progress } from "@/components/ui/progress"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Clock, CheckCircle, AlertCircle, Loader2 } from "lucide-react"
+import { Clock, AlertCircle, Loader2 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 
@@ -47,22 +47,24 @@ export default function TestPage() {
 
   useEffect(() => {
     const getUserAndQuestions = async () => {
-      const { data: { user: authUser } } = await supabase.auth.getUser()
+      const {
+        data: { user: authUser },
+      } = await supabase.auth.getUser()
 
       if (!authUser) {
-        router.push('/auth/login')
+        router.push("/auth/login")
         return
       }
 
       // Get user profile
       const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', authUser.id)
+        .from("profiles")
+        .select("*")
+        .eq("id", authUser.id)
         .single()
 
       if (profileError || !profile) {
-        router.push('/register')
+        router.push("/register")
         return
       }
 
@@ -70,25 +72,25 @@ export default function TestPage() {
 
       // Check if already completed
       if (profile.test_completed) {
-        router.push('/dashboard')
+        router.push("/dashboard")
         return
       }
 
       // Check payment status
-      if (profile.payment_status !== 'completed') {
-        router.push('/payment')
+      if (profile.payment_status !== "completed") {
+        router.push("/payment")
         return
       }
 
       // Get questions
       const { data: questionsData, error: questionsError } = await supabase
-        .from('test_questions')
-        .select('*')
-        .eq('is_active', true)
-        .order('id')
+        .from("test_questions")
+        .select("*")
+        .eq("is_active", true)
+        .order("id")
 
       if (questionsError) {
-        console.error('Error fetching questions:', questionsError)
+        console.error("Error fetching questions:", questionsError)
         return
       }
 
@@ -119,13 +121,13 @@ export default function TestPage() {
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
   }
 
   const handleAnswerSelect = (questionId: string, answer: string) => {
-    setAnswers(prev => ({
+    setAnswers((prev) => ({
       ...prev,
-      [questionId]: answer
+      [questionId]: answer,
     }))
   }
 
@@ -149,54 +151,52 @@ export default function TestPage() {
     try {
       // Calculate score
       let correctAnswers = 0
-      const questionsData = questions.map(q => ({
+      const questionsData = questions.map((q) => ({
         id: q.id,
         question: q.question,
-        correct_answer: q.correct_answer
-      }))
-
-      const answersData = questions.map(q => ({
-        question_id: q.id,
-        selected_answer: answers[q.id] || '',
         correct_answer: q.correct_answer,
-        is_correct: answers[q.id] === q.correct_answer
       }))
 
-      correctAnswers = answersData.filter(a => a.is_correct).length
+      const answersData = questions.map((q) => ({
+        question_id: q.id,
+        selected_answer: answers[q.id] || "",
+        correct_answer: q.correct_answer,
+        is_correct: answers[q.id] === q.correct_answer,
+      }))
+
+      correctAnswers = answersData.filter((a) => a.is_correct).length
       const score = Math.round((correctAnswers / questions.length) * 100)
       const passed = score >= 70 // 70% passing score
 
       // Save test attempt
-      const { error: attemptError } = await supabase
-        .from('test_attempts')
-        .insert({
-          user_id: user.id,
-          questions_data: questionsData,
-          answers_data: answersData,
-          score: score,
-          total_questions: questions.length,
-          passed: passed
-        })
+      const { error: attemptError } = await supabase.from("test_attempts").insert({
+        user_id: user.id,
+        questions_data: questionsData,
+        answers_data: answersData,
+        score: score,
+        total_questions: questions.length,
+        passed: passed,
+      })
 
       if (attemptError) throw attemptError
 
       // Update profile
       const { error: profileError } = await supabase
-        .from('profiles')
+        .from("profiles")
         .update({
           test_completed: true,
           test_score: score,
-          certificate_issued: passed
+          certificate_issued: passed,
         })
-        .eq('id', user.id)
+        .eq("id", user.id)
 
       if (profileError) throw profileError
 
       // Redirect to results
-      router.push('/dashboard')
+      router.push("/dashboard")
     } catch (error) {
-      console.error('Test submission error:', error)
-      alert('There was an error submitting your test. Please try again.')
+      console.error("Test submission error:", error)
+      alert("There was an error submitting your test. Please try again.")
     } finally {
       setIsSubmitting(false)
     }
@@ -247,12 +247,20 @@ export default function TestPage() {
                 <h3 className="font-semibold mb-4">Test Information</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <p><strong>Total Questions:</strong> {questions.length}</p>
-                    <p><strong>Time Limit:</strong> 60 minutes</p>
+                    <p>
+                      <strong>Total Questions:</strong> {questions.length}
+                    </p>
+                    <p>
+                      <strong>Time Limit:</strong> 60 minutes
+                    </p>
                   </div>
                   <div>
-                    <p><strong>Passing Score:</strong> 70%</p>
-                    <p><strong>Format:</strong> Multiple Choice</p>
+                    <p>
+                      <strong>Passing Score:</strong> 70%
+                    </p>
+                    <p>
+                      <strong>Format:</strong> Multiple Choice
+                    </p>
                   </div>
                 </div>
               </div>
@@ -260,16 +268,12 @@ export default function TestPage() {
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  <strong>Important:</strong> Once you start the test, the timer will begin and you cannot pause.
-                  Make sure you have a stable internet connection and sufficient time to complete the assessment.
+                  <strong>Important:</strong> Once you start the test, the timer will begin and you cannot pause. Make
+                  sure you have a stable internet connection and sufficient time to complete the assessment.
                 </AlertDescription>
               </Alert>
 
-              <Button
-                onClick={() => setTestStarted(true)}
-                className="w-full text-lg py-6"
-                size="lg"
-              >
+              <Button onClick={() => setTestStarted(true)} className="w-full text-lg py-6" size="lg">
                 Start Test
               </Button>
             </CardContent>
@@ -295,7 +299,9 @@ export default function TestPage() {
             <div className="flex justify-between items-center">
               <div>
                 <h1 className="text-xl font-semibold">Security Aptitude Test</h1>
-                <p className="text-sm opacity-90">Question {currentQuestion + 1} of {questions.length}</p>
+                <p className="text-sm opacity-90">
+                  Question {currentQuestion + 1} of {questions.length}
+                </p>
               </div>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
@@ -304,7 +310,9 @@ export default function TestPage() {
                 </div>
                 <div className="text-right">
                   <p className="text-sm">Answered</p>
-                  <p className="font-semibold">{Object.keys(answers).length}/{questions.length}</p>
+                  <p className="font-semibold">
+                    {Object.keys(answers).length}/{questions.length}
+                  </p>
                 </div>
               </div>
             </div>
@@ -362,11 +370,7 @@ export default function TestPage() {
 
             {/* Navigation */}
             <div className="flex justify-between mt-8">
-              <Button
-                variant="outline"
-                onClick={handlePrevious}
-                disabled={currentQuestion === 0}
-              >
+              <Button variant="outline" onClick={handlePrevious} disabled={currentQuestion === 0}>
                 Previous
               </Button>
 
@@ -379,9 +383,7 @@ export default function TestPage() {
                   {isSubmitting ? "Submitting..." : "Submit Test"}
                 </Button>
               ) : (
-                <Button onClick={handleNext}>
-                  Next
-                </Button>
+                <Button onClick={handleNext}>Next</Button>
               )}
             </div>
           </div>
