@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Navigation } from "@/components/navigation"
+import dynamic from "next/dynamic"
+import Navigation from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,7 +10,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { CreditCard, CheckCircle, AlertCircle, Loader2 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
-import { PaystackButton } from "react-paystack"
+
+const PaystackButton = dynamic(() => import('react-paystack').then(mod => mod.PaystackButton), { ssr: false })
 
 interface UserProfile {
   id: string
